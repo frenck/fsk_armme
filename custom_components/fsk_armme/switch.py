@@ -8,13 +8,12 @@ from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import EntityCategory
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .api import ArmmeApi, ArmmeSystemState
 from .const import DOMAIN
 from .coordinator import ArmmeDataUpdateCoordinator
+from .entity import ArmmeEntity
 
 
 async def async_setup_entry(
@@ -41,10 +40,7 @@ async def async_setup_entry(
     async_add_entities(entities)
 
 
-class ArmmeZoneBypassSwitch(
-    CoordinatorEntity[ArmmeDataUpdateCoordinator],
-    SwitchEntity,
-):
+class ArmmeZoneBypassSwitch(ArmmeEntity, SwitchEntity):
     """Switch allowing ArmME zones to be bypassed or restored."""
 
     _attr_has_entity_name = True
@@ -59,35 +55,14 @@ class ArmmeZoneBypassSwitch(
         friendly_name: str,
     ) -> None:
         """Initialise the zone bypass switch."""
-        super().__init__(coordinator)
-        self._api = api
+        super().__init__(
+            coordinator,
+            api,
+            unique_id_suffix=f"zone-{zone_number}-bypass",
+            name=f"{friendly_name} bypass",
+        )
         self._zone_number = zone_number
-        serial = api.device.serial_no or str(api.device.device_id)
-        self._attr_unique_id = f"{serial}-zone-{zone_number}-bypass"
         self._attr_translation_key = "zone_bypass"
-        self._friendly_zone_name = friendly_name
-
-        props = api.properties
-        sw_version = getattr(props, "version_panel", None) or getattr(
-            props, "version_com", None
-        )
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, serial)},
-            manufacturer="ArmME",
-            name=api.device.name,
-            model=api.device.device_type_name,
-            sw_version=sw_version,
-        )
-
-    @property
-    def name(self) -> str | None:
-        """Return the entity name."""
-        return f"{self._friendly_zone_name} bypass"
-
-    @property
-    def available(self) -> bool:
-        """Return availability based on coordinator status."""
-        return self.coordinator.last_update_success and super().available
 
     @property
     def is_on(self) -> bool | None:
@@ -110,22 +85,22 @@ class ArmmeZoneBypassSwitch(
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Bypass the zone."""
-        await self._api.async_set_zone_bypass(
+        await self.api.async_set_zone_bypass(
             zone=self._zone_number,
             partition=self.coordinator.partition,
             bypass=True,
-            panel_code=self._api.panel_code,
+            panel_code=self.api.panel_code,
             session_id=self.coordinator.last_session_id,
         )
         await self.coordinator.async_request_refresh()
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Remove bypass from the zone."""
-        await self._api.async_set_zone_bypass(
+        await self.api.async_set_zone_bypass(
             zone=self._zone_number,
             partition=self.coordinator.partition,
             bypass=False,
-            panel_code=self._api.panel_code,
+            panel_code=self.api.panel_code,
             session_id=self.coordinator.last_session_id,
         )
         await self.coordinator.async_request_refresh()

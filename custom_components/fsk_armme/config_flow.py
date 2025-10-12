@@ -5,6 +5,9 @@ from __future__ import annotations
 from collections.abc import Mapping
 from typing import Any
 
+from pyfskelec.client import ArmMEClient
+from pyfskelec.exceptions import ArmMEAuthError, ArmMERequestError
+from pyfskelec.models import DeviceSummary
 import voluptuous as vol
 
 from homeassistant import config_entries
@@ -23,9 +26,6 @@ from .const import (
     DOMAIN,
     MIN_UPDATE_INTERVAL,
 )
-from .pyfskelec.client import ArmMEClient
-from .pyfskelec.exceptions import ArmMEAuthError, ArmMERequestError
-from .pyfskelec.models import DeviceSummary
 
 
 def _default_update_interval_seconds() -> int:

@@ -5,6 +5,8 @@ from __future__ import annotations
 from datetime import timedelta
 import logging
 
+from pyfskelec.exceptions import ArmMEAuthError, ArmMERequestError
+
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import CONF_PASSWORD, CONF_USERNAME
 from homeassistant.core import HomeAssistant
@@ -24,7 +26,6 @@ from .const import (
     PLATFORMS,
 )
 from .coordinator import ArmmeDataUpdateCoordinator
-from .pyfskelec.exceptions import ArmMEAuthError, ArmMERequestError
 
 _LOGGER = logging.getLogger(__name__)
 

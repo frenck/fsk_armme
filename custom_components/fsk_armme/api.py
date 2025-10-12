@@ -7,21 +7,21 @@ from collections.abc import Callable
 from dataclasses import dataclass
 import logging
 
-from homeassistant.core import HomeAssistant
-
-from .pyfskelec.client import (
+from pyfskelec.client import (
     ArmMEAuthError,
     ArmMEClient,
     ArmMERequestError,
     DeviceSummary,
 )
-from .pyfskelec.models import (
+from pyfskelec.models import (
     ApiFailure,
     ComStatus,
     DeviceProperties,
     OperationResult,
     PartitionStatus,
 )
+
+from homeassistant.core import HomeAssistant
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -95,7 +95,9 @@ class ArmmeApi:
         self._client.login_password(self._username, self._password)
         device = self._client.get_device_by_id(self._device_id)
         if device is None:
-            raise ArmMERequestError(f"Device id {self._device_id} not found for account")
+            raise ArmMERequestError(
+                f"Device id {self._device_id} not found for account"
+            )
         self._device = device
         self._properties = self._client.get_device_properties(device.device_id)
 

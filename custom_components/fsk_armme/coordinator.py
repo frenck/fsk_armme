@@ -5,12 +5,13 @@ from __future__ import annotations
 from datetime import timedelta
 import logging
 
+from pyfskelec.exceptions import ArmMEAuthError, ArmMERequestError
+
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .api import ArmmeApi, ArmmeSystemState
-from .pyfskelec.exceptions import ArmMEAuthError, ArmMERequestError
 
 _LOGGER = logging.getLogger(__name__)
 

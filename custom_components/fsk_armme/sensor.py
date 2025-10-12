@@ -15,13 +15,12 @@ from homeassistant.components.sensor import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import PERCENTAGE, EntityCategory, UnitOfElectricPotential
 from homeassistant.core import HomeAssistant
-from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .api import ArmmeApi, ArmmeSystemState
 from .const import DOMAIN
 from .coordinator import ArmmeDataUpdateCoordinator
+from .entity import ArmmeEntity
 
 
 async def async_setup_entry(
@@ -40,24 +39,6 @@ async def async_setup_entry(
     ]
 
     async_add_entities(entities)
-
-
-def _build_device_info(api: ArmmeApi) -> DeviceInfo:
-    """Return DeviceInfo shared by all ArmME entities."""
-    device = api.device
-    props = api.properties
-    serial = device.serial_no or str(device.device_id)
-    sw_version = getattr(props, "version_panel", None) or getattr(
-        props, "version_com", None
-    )
-
-    return DeviceInfo(
-        identifiers={(DOMAIN, serial)},
-        manufacturer="ArmME",
-        name=device.name,
-        model=device.device_type_name,
-        sw_version=sw_version,
-    )
 
 
 @dataclass(frozen=True, kw_only=True)
@@ -142,7 +123,7 @@ SENSOR_DESCRIPTIONS: tuple[ArmmeSensorEntityDescription, ...] = (
 )
 
 
-class ArmmeSensor(CoordinatorEntity[ArmmeDataUpdateCoordinator], SensorEntity):
+class ArmmeSensor(ArmmeEntity, SensorEntity):
     """Generic ArmME sensor entity using an entity description."""
 
     _attr_has_entity_name = True
@@ -155,11 +136,13 @@ class ArmmeSensor(CoordinatorEntity[ArmmeDataUpdateCoordinator], SensorEntity):
         description: ArmmeSensorEntityDescription,
     ) -> None:
         """Initialise the sensor wrapper."""
-        super().__init__(coordinator)
+        super().__init__(
+            coordinator,
+            api,
+            unique_id_suffix=description.key,
+            translation_key=description.translation_key,
+        )
         self.entity_description: ArmmeSensorEntityDescription = description
-        serial = api.device.serial_no or str(api.device.device_id)
-        self._attr_unique_id = f"{serial}-{description.key}"
-        self._attr_device_info = _build_device_info(api)
 
     def _raw_value(self) -> Any | None:
         data = cast(ArmmeSystemState | None, getattr(self.coordinator, "data", None))

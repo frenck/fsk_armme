@@ -6,6 +6,9 @@ from collections.abc import Awaitable, Callable
 import logging
 from typing import Any
 
+from pyfskelec.exceptions import ArmMEAuthError, ArmMERequestError
+from pyfskelec.models import PartitionStatus
+
 from homeassistant.components.alarm_control_panel import (
     AlarmControlPanelEntity,
     AlarmControlPanelEntityFeature,
@@ -15,15 +18,12 @@ from homeassistant.components.alarm_control_panel import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.exceptions import HomeAssistantError
-from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .api import ArmmeApi, ArmmeOperationError
 from .const import DOMAIN
 from .coordinator import ArmmeDataUpdateCoordinator
-from .pyfskelec.exceptions import ArmMEAuthError, ArmMERequestError
-from .pyfskelec.models import PartitionStatus
+from .entity import ArmmeEntity
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -67,10 +67,7 @@ async def async_setup_entry(
     async_add_entities(entities)
 
 
-class ArmmeAlarmControlPanel(
-    CoordinatorEntity[ArmmeDataUpdateCoordinator],
-    AlarmControlPanelEntity,
-):
+class ArmmeAlarmControlPanel(ArmmeEntity, AlarmControlPanelEntity):
     """Representation of an ArmME partition."""
 
     _attr_has_entity_name = True
@@ -90,29 +87,14 @@ class ArmmeAlarmControlPanel(
         friendly_name: str,
     ) -> None:
         """Initialise the alarm control panel entity."""
-        super().__init__(coordinator)
-        self._api = api
+        super().__init__(
+            coordinator,
+            api,
+            unique_id_suffix=f"partition-{partition}",
+            name=friendly_name,
+        )
         self._partition = partition
-        device = api.device
-        props = api.properties
-        serial = device.serial_no or str(device.device_id)
-        self._attr_name = friendly_name
-        self._attr_unique_id = f"{serial}-partition-{partition}"
-        sw_version = getattr(props, "version_panel", None) or getattr(
-            props, "version_com", None
-        )
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, serial)},
-            manufacturer="ArmME",
-            name=device.name,
-            model=device.device_type_name,
-            sw_version=sw_version,
-        )
-
-    @property
-    def available(self) -> bool:
-        """Return entity availability based on coordinator status."""
-        return self.coordinator.last_update_success and super().available
+        self._api = api
 
     @property
     def alarm_state(self) -> AlarmControlPanelState | None:
