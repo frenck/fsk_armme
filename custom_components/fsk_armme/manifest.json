@@ -1,0 +1,13 @@
+{
+  "domain": "fsk_armme",
+  "name": "Armme(Beta)",
+  "codeowners": ["@RenierM26"],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/RenierM26/fsk_armme",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/RenierM26/fsk_armme/issues",
+  "loggers": ["pyfskelec"],
+  "requirements": ["pyfskelec==0.1.4"],
+  "version": "0.1.0.0"
+}

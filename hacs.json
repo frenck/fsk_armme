@@ -1,0 +1,6 @@
+{
+  "name": "Armme(Beta)",
+  "render_readme": true,
+  "homeassistant": "2025.10.0",
+  "hacs": "1.6.0"
+}

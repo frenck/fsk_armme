@@ -1,0 +1,56 @@
+{
+  "title": "ArmME",
+  "config": {
+    "step": {
+      "user": {
+        "title": "ArmME",
+        "description": "Sign in with your ArmME account.",
+        "data": {
+          "username": "Email address",
+          "password": "Password"
+        }
+      },
+      "device": {
+        "title": "Select alarm panel",
+        "description": "Choose the panel to connect and provide its panel code.",
+        "data": {
+          "device_id": "Alarm panel",
+          "panel_code": "Panel code",
+          "partition": "Default partition"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Reauthenticate ArmME",
+        "description": "Update the credentials used to connect to ArmME.",
+        "data": {
+          "password": "Password",
+          "panel_code": "Panel code"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Authentication failed. Check your email and password.",
+      "cannot_connect": "Unable to connect to ArmME. Try again later.",
+      "no_devices": "No alarm panels were found on this account.",
+      "device_missing": "The selected alarm panel is no longer available."
+    },
+    "abort": {
+      "unknown": "Unexpected error while setting up ArmME."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "ArmME options",
+        "description": "Adjust polling behaviour for the integration.",
+        "data": {
+          "partition": "Partition to monitor",
+          "update_interval": "Polling interval (seconds)"
+        }
+      }
+    },
+    "error": {
+      "interval_too_short": "The polling interval is too short. Choose a longer interval."
+    }
+  }
+}
