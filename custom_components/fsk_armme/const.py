@@ -22,4 +22,6 @@ MIN_UPDATE_INTERVAL = timedelta(seconds=15)
 PLATFORMS: list[Platform] = [
     Platform.ALARM_CONTROL_PANEL,
     Platform.BINARY_SENSOR,
+    Platform.SENSOR,
+    Platform.SWITCH,
 ]

@@ -128,22 +128,6 @@ class ArmmeAlarmControlPanel(
             return AlarmControlPanelState.ARMED_HOME
         return AlarmControlPanelState.DISARMED
 
-    @property
-    def extra_state_attributes(self) -> dict[str, Any]:
-        """Return additional attributes."""
-        attributes: dict[str, Any] = {"partition": self._partition}
-        status = self._partition_status()
-        if status:
-            attributes.update(
-                {
-                    "ac_fail": status.ac_fail,
-                    "away_armed": status.away_armed,
-                    "stay_armed": status.stay_armed1,
-                    "alarmed": status.alarmed,
-                }
-            )
-        return attributes
-
     def _partition_status(self) -> PartitionStatus | None:
         """Return cached partition status."""
         data = self.coordinator.data

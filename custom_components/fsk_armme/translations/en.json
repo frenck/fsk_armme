@@ -52,5 +52,26 @@
     "error": {
       "interval_too_short": "The polling interval is too short. Choose a longer interval."
     }
+  },
+  "entity": {
+    "sensor": {
+      "system_voltage": {
+        "name": "System voltage"
+      },
+      "com_version": {
+        "name": "Communication module version"
+      },
+      "signal_sim1": {
+        "name": "SIM 1 signal"
+      },
+      "signal_sim2": {
+        "name": "SIM 2 signal"
+      }
+    },
+    "switch": {
+      "zone_bypass": {
+        "name": "Zone bypass"
+      }
+    }
   }
 }
