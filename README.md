@@ -10,7 +10,7 @@ Monitor and control your ArmME (MiFalcon) alarm panel directly from Home Assista
 - Alarm control panel entity for each ArmME partition with away/stay/disarm actions
 - Zone sensors, SIM signal strength, COM firmware/voltage diagnostics
 - Per-zone bypass switches and partition AC failure binary sensors
-- Cloud polling via the official ArmME mobile API (pyfskelec)
+- Cloud polling via the unofficial ArmME mobile API (pyfskelec)
 
 ## Installation
 
