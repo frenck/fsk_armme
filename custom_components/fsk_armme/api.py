@@ -56,6 +56,9 @@ class ArmmeSystemState:
     partitions: list[PartitionStatus]
     zones: list[ArmmeZoneState]
     com_status: ComStatus | None
+    signal_sim1: float | None
+    signal_sim2: float | None
+    session_id: str
 
 
 class ArmmeApi:
@@ -132,10 +135,12 @@ class ArmmeApi:
             _LOGGER.debug(
                 "Polling ArmME device %s (attempt %s)", device.device_id, attempt + 1
             )
-            session_id, _open_info = self._client.start_session(
+            session_id, open_info = self._client.start_session(
                 device,
                 self._panel_code,
             )
+            signal_sim1 = open_info.ss1
+            signal_sim2 = open_info.ss2
             try:
                 partitions = self._client.partition_status_all(
                     device.device_type_id,
@@ -186,6 +191,9 @@ class ArmmeApi:
                     partitions=partitions,
                     zones=zone_state,
                     com_status=com_status,
+                    signal_sim1=signal_sim1,
+                    signal_sim2=signal_sim2,
+                    session_id=session_id,
                 )
             except ArmMEAuthError:
                 raise
@@ -212,6 +220,31 @@ class ArmmeApi:
                 session_id=session_id,
             ),
             panel_code=panel_code,
+        )
+
+    async def async_set_zone_bypass(
+        self,
+        *,
+        zone: int,
+        partition: int,
+        bypass: bool,
+        panel_code: str,
+        session_id: str | None = None,
+    ) -> None:
+        """Set the bypass state for a single zone."""
+        session = session_id
+        await self._async_run_command(
+            lambda session_id: self._client.set_zone_bypass(
+                self.device.device_type_id,
+                self.device.device_id,
+                panel_code,
+                partition=partition,
+                zone=zone,
+                bypass=bypass,
+                session_id=session_id,
+            ),
+            panel_code=panel_code,
+            session_override=session,
         )
 
     async def async_arm_away(self, *, partition: int, panel_code: str) -> None:
@@ -245,24 +278,30 @@ class ArmmeApi:
         executor: Callable[[str], OperationResult],
         *,
         panel_code: str,
+        session_override: str | None = None,
     ) -> None:
         """Execute a command after opening a session, retrying once on failure."""
         async with self._lock:
             await self._hass.async_add_executor_job(
-                self._run_command_sync, executor, panel_code
+                self._run_command_sync, executor, panel_code, session_override
             )
 
     def _run_command_sync(
         self,
         executor: Callable[[str], OperationResult],
         panel_code: str,
+        session_override: str | None,
     ) -> None:
         """Blocking helper used by command coroutines."""
         device = self.device
         last_error: Exception | None = None
 
         for _attempt in range(2):
-            session_id, _ = self._client.start_session(device, panel_code)
+            if session_override:
+                session_id = session_override
+                session_override = None
+            else:
+                session_id, _ = self._client.start_session(device, panel_code)
             try:
                 result = executor(session_id)
             except ArmMEAuthError:

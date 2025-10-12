@@ -35,12 +35,16 @@ class ArmmeDataUpdateCoordinator(DataUpdateCoordinator[ArmmeSystemState]):
         )
         self.api = api
         self.partition = int(partition)
+        self.last_session_id: str | None = None
 
     async def _async_update_data(self) -> ArmmeSystemState:
         """Fetch state from the underlying API."""
         try:
-            return await self.api.async_fetch_state(partition=self.partition)
+            state = await self.api.async_fetch_state(partition=self.partition)
         except ArmMEAuthError as err:
             raise ConfigEntryAuthFailed(err) from err
         except ArmMERequestError as err:
             raise UpdateFailed(str(err)) from err
+        else:
+            self.last_session_id = state.session_id
+            return state
